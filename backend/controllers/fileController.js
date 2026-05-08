@@ -16,15 +16,64 @@ exports.uploadFile = async (req, res) => {
     const uploadedFiles = [];
 
     for (const file of req.files) {
+      const uploadMode = req.body.uploadMode;
+      let fileName = file.originalname;
+      const existingFile = await File.findOne({
+        displayName: file.originalname,
+        ...(req.user
+          ? { user: req.user.id }
+          : { guestId: req.body.guestId }),
+
+      });
+
+      if (
+        existingFile &&
+        uploadMode === "replace"
+      ) {
+
+        if (fs.existsSync(existingFile.path)) {
+          fs.unlinkSync(existingFile.path);
+        }
+
+        await File.findByIdAndDelete(
+          existingFile._id
+        );
+      }
+
+      if (existingFile && uploadMode === "saveanyway") {
+        const nameParts = file.originalname.split(".");
+        const extension = nameParts.pop();
+        const baseName = nameParts.join(".");
+        let counter = 1;
+        let newName = `${baseName}(${counter}).${extension}`;
+        while (
+          await File.findOne({
+            displayName: newName,
+            user: req.user ? req.user.id : null,
+              guestId: req.user
+                ? null
+                : req.body.guestId,
+          })
+        ) {
+          counter++;
+          newName = `${baseName}(${counter}).${extension}`;
+        }
+        fileName = newName;
+      }
 
       const newFile = await File.create({
 
         filename: file.filename,
         originalname: file.originalname,
-        displayName: file.originalname,
+        displayName: fileName,
         path: file.path,
         size: file.size,
-        user: req.user.id,
+
+        user: req.user ? req.user.id : null,
+          guestId: req.user
+            ? null
+            : req.body.guestId,
+
         folder: req.body.folder || "General",
 
       });
@@ -36,7 +85,6 @@ exports.uploadFile = async (req, res) => {
     res.status(200).json({
 
       message: "Files uploaded successfully",
-
       files: uploadedFiles,
 
     });
@@ -57,9 +105,22 @@ exports.getFiles = async (req, res) => {
 
   try {
 
-    const files = await File.find({
-      user: req.user.id,
-    }).sort({ createdAt: -1 });
+    let files;
+
+    if (req.user) {
+
+      files = await File.find({
+        user: req.user.id,
+      }).sort({ createdAt: -1 });
+
+    } else {
+
+      files = await File.find({
+        guestId: req.query.guestId,
+      }).sort({ createdAt: -1 });
+
+    }
+
     res.status(200).json(files);
 
   } catch (error) {
@@ -69,39 +130,10 @@ exports.getFiles = async (req, res) => {
     res.status(500).json({
       message: "Server error",
     });
+
   }
+
 };
-
-const fs = require("fs");
-
-exports.deleteFile = async (req, res) => {
-  try {
-    const file = await File.findById(req.params.id);
-    if (!file) {
-      return res.status(404).json({
-        message: "File not found",
-      });
-    }
-    if (file.user.toString() !== req.user.id) {
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
-    }
-    if (fs.existsSync(file.path)) {
-      fs.unlinkSync(file.path);
-    }
-    await File.findByIdAndDelete(req.params.id);
-    res.status(200).json({
-      message: "File deleted",
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Server error",
-    });
-  }
-};
-
 exports.renameFile = async (req, res) => {
 
   try {
@@ -233,6 +265,56 @@ exports.shareFileByEmail = async (req, res) => {
 
     res.status(500).json({
       message: "Email failed",
+    });
+
+  }
+
+};
+
+const fs = require("fs");
+
+exports.deleteFile = async (req, res) => {
+
+  try {
+
+    const file = await File.findById(req.params.id);
+
+    if (!file) {
+
+      return res.status(404).json({
+        message: "File not found",
+      });
+
+    }
+
+    if (
+      req.user &&
+      file.user &&
+      file.user.toString() !== req.user.id
+    ) {
+
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+
+    }
+
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+
+    await File.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      message: "File deleted",
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error",
     });
 
   }
