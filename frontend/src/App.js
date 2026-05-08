@@ -1,5 +1,12 @@
 import "./App.css";
 import { useRef, useEffect, useState } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link
+} from "react-router-dom";
+import axios from "axios";
 import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModal";
 import { Toaster } from "react-hot-toast";
@@ -12,17 +19,24 @@ function App() {
   const uploadRef = useRef(null);
   const featuresRef = useRef(null);
   const statsRef = useRef(null);
-  // const fileListRef = useRef(null);
+
+  const [stats, setStats] = useState({
+    totalFiles: 0,
+    totalStorage: 0,
+    totalDownloads: 0,
+  });
+
   const [showNavbar, setShowNavbar] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(
     !!localStorage.getItem("token") ||
     !!localStorage.getItem("guest")
   );
+
   const [darkMode, setDarkMode] = useState(true);
   const [showFiles, setShowFiles] = useState(false);
-  // const isGuest = localStorage.getItem("guest") === "true";
 
   useEffect(() => {
 
@@ -32,45 +46,94 @@ function App() {
         "guest_" + Date.now()
       );
     }
+
   }, []);
 
   useEffect(() => {
+
+    const fetchStats = async () => {
+
+      try {
+
+        const res = await axios.get(
+          "http://localhost:5000/api/files/stats"
+        );
+
+        setStats(res.data);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+    fetchStats();
+
+  }, []);
+
+  useEffect(() => {
+
     const tokenTime = localStorage.getItem("loginTime");
+
     if (tokenTime) {
+
       const currentTime = Date.now();
       const diff = currentTime - Number(tokenTime);
       const oneHour = 60 * 60 * 1000;
+
       if (diff > oneHour) {
+
         localStorage.removeItem("token");
         localStorage.removeItem("loginTime");
         setIsLoggedIn(false);
+
       }
+
     }
+
   }, []);
   
   useEffect(() => {
+
     const handleScroll = () => {
+
       if (window.scrollY > 80) {
+
         setShowNavbar(true);
+
       } else {
+
         setShowNavbar(false);
+
       }
+
     };
+
     window.addEventListener("scroll", handleScroll);
+
     return () => {
+
       window.removeEventListener("scroll", handleScroll);
+
     };
 
   }, []);
+
   useEffect(() => {
+
     document.body.className = darkMode ? "" : "light";
+
   }, [darkMode]);
 
   const scrollToSection = (ref) => {
+
     ref.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
     });
+
   };
 
   if (window.location.pathname === "/admin") {
@@ -87,12 +150,6 @@ function App() {
       <div className="glow glow-4"></div>
       <div className="glow glow-5"></div>
 
-      {/* BACKGROUND */}
-      {/* <div className="background-grid"></div>
-      <div className="background-glow glow-1"></div>
-      <div className="background-glow glow-2"></div> */}
-
-      {/* NAVBAR */}
       <nav className={`navbar ${showNavbar ? "show" : "hide"}`}>
 
         <div className="nav-left">
@@ -101,6 +158,7 @@ function App() {
             <div className="logo-icon">⚡</div>
             <span>QuickShare</span>
           </div>
+
         </div>
 
         <div className="nav-center">
@@ -143,6 +201,7 @@ function App() {
         </div>
 
         <div className="nav-auth">
+
           <button
             className="theme-toggle"
             onClick={() => setDarkMode(!darkMode)}
@@ -153,17 +212,21 @@ function App() {
           <button
             className="get-started-btn"
             onClick={() => {
+
               localStorage.setItem("guest", "true");
               setIsLoggedIn(true);
+
             }}
           >
             Guest
           </button>
           
-          {isLoggedIn  ? (
+          {isLoggedIn ? (
+
             <button
               className="login-btn"
               onClick={() => {
+
                 localStorage.removeItem("token");
                 localStorage.removeItem("guest");
                 localStorage.removeItem("loginTime");
@@ -209,17 +272,18 @@ function App() {
 
       </nav>
 
-      {/* HERO */}
       <section className="hero">
 
         <div className="hero-content">
 
           <div className="hero-badge">
-            ✨ END-TO-END ENCRYPTED • NO SIGNUP
+            ✨ PRIVATE FILE SHARING • NO SIGNUP
           </div>
 
           <h1 className="hero-title">
+
             {"QuickShare".split("").map((letter, index) => (
+
               <span
                 key={index}
                 className="hero-letter"
@@ -227,7 +291,9 @@ function App() {
               >
                 {letter}
               </span>
+
             ))}
+
           </h1>
 
           <p className="hero-subtext">
@@ -237,8 +303,9 @@ function App() {
 
           <div className="hero-buttons">
 
-            <button className="primary-btn"
-            onClick={() => scrollToSection(uploadRef)}
+            <button
+              className="primary-btn"
+              onClick={() => scrollToSection(uploadRef)}
             >
               Upload File →
             </button>
@@ -268,7 +335,6 @@ function App() {
 
       </section>
 
-      {/* UPLOAD */}
       <section
         ref={uploadRef}
         className="upload-section"
@@ -296,7 +362,6 @@ function App() {
 
       </section>
 
-      {/* FEATURES */}
       <section
         ref={featuresRef}
         className="features-section section-spacing"
@@ -367,7 +432,6 @@ function App() {
 
       </section>
 
-      {/* STATS */}
       <section
         ref={statsRef}
         className="stats-section"
@@ -378,13 +442,11 @@ function App() {
           <div className="text-center mb-16">
 
             <p className="section-label">
-              NUMBERS DON'T LIE
+              LIVE PLATFORM STATS
             </p>
 
             <h2 className="section-title stats-title">
-              Built for scale,
-              <br />
-              trusted globally
+              Real-time platform usage
             </h2>
 
           </div>
@@ -392,10 +454,17 @@ function App() {
           <div className="stats-grid">
 
             {[
-              ["2.4M+", "FILES SHARED"],
-              ["18+ GB", "DATA DELIVERED"],
-              ["0.42s", "AVG TRANSFER"],
-              ["99.98%", "UPTIME"]
+              [stats.totalFiles, "FILES SHARED"],
+
+              [
+                `${(stats.totalStorage / (1024 * 1024)).toFixed(2)} MB`,
+                "DATA STORED"
+              ],
+
+              [stats.totalDownloads, "TOTAL DOWNLOADS"],
+
+              ["24/7", "UPTIME"]
+
             ].map((item, index) => (
 
               <div
@@ -421,22 +490,31 @@ function App() {
 
       </section>
 
-      {/* FOOTER */}
       <footer className="footer">
+
         <div className="footer-top">
+
           <div className="footer-left">
+
             <div className="footer-brand">
+
               <div className="footer-logo-circle">
                 ⚡
               </div>
-                <h2>QuickShare</h2>
-              </div>
+
+              <h2>QuickShare</h2>
+
+            </div>
+
             <p>
               Premium file sharing for teams that move fast.
               Secure, simple, ephemeral.
             </p>
+
           </div>
+
           <div className="footer-links">
+
             <button onClick={() => scrollToSection(uploadRef)}>
               Upload
             </button>
@@ -449,13 +527,23 @@ function App() {
               Stats
             </button>
 
-            <button>
-              Privacy
-            </button>
+            <Link
+              to="/privacy"
+              style={{ textDecoration: "none" }}
+            >
+              <button>
+                Privacy
+              </button>
+            </Link>
 
-            <button>
-              Terms
-            </button>
+            <Link
+              to="/terms"
+              style={{ textDecoration: "none" }}
+            >
+              <button>
+                Terms
+              </button>
+            </Link>
 
           </div>
 
@@ -487,67 +575,135 @@ function App() {
 
       </footer>
 
-        {showLogin && (
-          <LoginModal
-            onClose={() => setShowLogin(false)}
-            setIsLoggedIn={setIsLoggedIn}
-          />
-        )}
+      {showLogin && (
 
-        {showSignup && (
-          <SignupModal
-            onClose={() => setShowSignup(false)}
-            setIsLoggedIn={setIsLoggedIn}
-          />
-        )}
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          setIsLoggedIn={setIsLoggedIn}
+        />
 
-        {showFiles && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md pt-24 pb-6 px-6">
-            <div
+      )}
+
+      {showSignup && (
+
+        <SignupModal
+          onClose={() => setShowSignup(false)}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+
+      )}
+
+      {showFiles && (
+
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md pt-24 pb-6 px-6">
+
+          <div
+            className="
+              relative
+              w-[96vw]
+              h-[92vh]
+              overflow-y-auto
+              overflow-x-hidden
+              rounded-3xl
+              border border-purple-500/20
+              bg-[#070b1a]
+              shadow-2xl
+              pt-16
+            "
+          >
+
+            <button
+              onClick={() => setShowFiles(false)}
               className="
-                relative
-                w-[96vw]
-                h-[92vh]
-                overflow-y-auto
-                overflow-x-hidden
-                rounded-3xl
-                border border-purple-500/20
-                bg-[#070b1a]
-                shadow-2xl
-                pt-16
+                absolute top-4 right-4 z-50
+                w-10 h-10
+                rounded-full
+                bg-white/10
+                text-white
+                hover:bg-purple-500
+                transition
               "
             >
+              ✕
+            </button>
 
-              <button
-                onClick={() => setShowFiles(false)}
-                className="
-                  absolute top-4 right-4 z-50
-                  w-10 h-10
-                  rounded-full
-                  bg-white/10
-                  text-white
-                  hover:bg-purple-500
-                  transition
-                "
-              >
-                ✕
-              </button>
-
-              <div className="w-full h-full overflow-auto">
-                <FileList />
-              </div>
-
+            <div className="w-full h-full overflow-auto">
+              <FileList />
             </div>
 
           </div>
 
-        )}
+        </div>
 
-        <Toaster position="top-right" />
+      )}
+
+      <Toaster position="top-right" />
 
     </div>
 
   );
+
 }
 
-export default App;
+function AppWrapper() {
+
+  return (
+
+    <BrowserRouter>
+
+      <Routes>
+
+        <Route
+          path="/"
+          element={<App />}
+        />
+
+        <Route
+          path="/privacy"
+          element={
+            <div
+              style={{
+                color: "white",
+                padding: "40px",
+                minHeight: "100vh",
+                background: "#050816"
+              }}
+            >
+              <h1>Privacy Policy</h1>
+
+              <p>
+                QuickShare respects your privacy and keeps your files secure.
+              </p>
+            </div>
+          }
+        />
+
+        <Route
+          path="/terms"
+          element={
+            <div
+              style={{
+                color: "white",
+                padding: "40px",
+                minHeight: "100vh",
+                background: "#050816"
+              }}
+            >
+              <h1>Terms & Conditions</h1>
+
+              <p>
+                By using QuickShare, you agree to upload only content you own.
+              </p>
+            </div>
+          }
+        />
+
+      </Routes>
+
+    </BrowserRouter>
+
+  );
+
+}
+
+export default AppWrapper;

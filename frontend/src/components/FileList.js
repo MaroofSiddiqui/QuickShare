@@ -16,8 +16,8 @@ function FileList() {
   const isGuest = !token;
 
   useEffect(() => {
-      fetchFiles();
-    }, []);
+    fetchFiles();
+  }, []);
 
   const fetchFiles = async () => {
 

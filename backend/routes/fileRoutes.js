@@ -11,9 +11,12 @@ const {
   getFiles,
   downloadFile,
   deleteFile,
-  renameFile,
   shareFileByEmail,
+  renameFile,
+  getStats,
 } = require("../controllers/fileController");
+
+router.get("/stats", getStats);
 
 router.post(
   "/upload",

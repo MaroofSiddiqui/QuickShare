@@ -320,3 +320,39 @@ exports.deleteFile = async (req, res) => {
   }
 
 };
+
+exports.getStats = async (req, res) => {
+
+  try {
+
+    const files = await File.find();
+
+    const totalFiles = files.length;
+
+    const totalStorage = files.reduce(
+      (acc, file) => acc + file.size,
+      0
+    );
+
+    const totalDownloads = files.reduce(
+      (acc, file) => acc + file.downloads,
+      0
+    );
+
+    res.status(200).json({
+      totalFiles,
+      totalStorage,
+      totalDownloads,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+
+  }
+
+};
