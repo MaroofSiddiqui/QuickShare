@@ -1,0 +1,154 @@
+/* index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  background:#05010f;
+  color:white;
+  overflow-x:hidden;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+#root{
+  width:100%;
+  overflow-x:hidden;
+}
+
+.grid-bg{
+  background:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size:56px 56px;
+}
+
+.section-container{
+  width:100%;
+  max-width:1420px;
+  margin:auto;
+  padding-left:4vw;
+  padding-right:4vw;
+}
+
+.hero-title{
+  font-size:clamp(56px,5.8vw,104px);
+  line-height:.92;
+  letter-spacing:-0.06em;
+}
+
+.section-title{
+  font-size:clamp(38px,4vw,68px);
+  line-height:.98;
+  letter-spacing:-0.05em;
+}
+
+.glass-card{
+  background:rgba(10,10,22,.82);
+  border:1px solid rgba(255,255,255,.05);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+
+.scrollable-content{
+  overflow:auto;
+  max-height:100%;
+}
+
+.scrollable-content::-webkit-scrollbar{
+  width:6px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb{
+  background:#7c3aed;
+  border-radius:999px;
+}
+
+.section-spacing{
+  padding-top:78px;
+  padding-bottom:78px;
+}
+
+.big-footer-text{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:-3vw;
+  font-size:clamp(100px,15vw,260px);
+  font-weight:800;
+  color:rgba(139,92,246,.05);
+  pointer-events:none;
+  user-select:none;
+  white-space:nowrap;
+  line-height:1;
+}
+
+section{
+  position:relative;
+  overflow:hidden;
+}
+
+@media(max-width:1200px){
+
+  .hero-title{
+    font-size:clamp(50px,7vw,88px);
+  }
+
+  .section-title{
+    font-size:clamp(34px,5vw,58px);
+  }
+}
+
+@media(max-width:768px){
+
+  .section-spacing{
+    padding-top:60px;
+    padding-bottom:60px;
+  }
+
+  .hero-title{
+    font-size:clamp(40px,10vw,68px);
+  }
+
+  .section-title{
+    font-size:clamp(30px,8vw,46px);
+  }
+
+  .big-footer-text{
+    font-size:24vw;
+  }
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.5);
+  border-radius: 999px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.8);
+}
