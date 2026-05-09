@@ -6,7 +6,7 @@ import {
   Route,
   Link
 } from "react-router-dom";
-import axios from "axios";
+import API from "./api";
 import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModal";
 import { Toaster } from "react-hot-toast";
@@ -55,9 +55,7 @@ function App() {
 
       try {
 
-        const res = await axios.get(
-          "http://localhost:5000/api/files/stats"
-        );
+        const res = await API.get("/files/stats")
 
         setStats(res.data);
 

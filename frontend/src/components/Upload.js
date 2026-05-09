@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import axios from "axios";
+import API from "../api";
 
 function Upload() {
 
@@ -57,16 +57,21 @@ function Upload() {
     });
 
     formData.append("folder", folder);
+
     formData.append(
       "guestId",
       localStorage.getItem("guestId")
     );
-    formData.append("uploadMode", uploadMode);
+
+    formData.append(
+      "uploadMode",
+      uploadMode
+    );
 
     try {
 
-      const res = await axios.post(
-        "http://localhost:5000/api/files/upload",
+      const res = await API.post(
+        "/files/upload",
         formData,
         {
           headers: {
@@ -104,9 +109,7 @@ function Upload() {
     } catch (error) {
 
       console.log(error);
-
       console.log(error.response);
-
       console.log(error.response?.data);
 
       setMessage(
@@ -418,6 +421,7 @@ function Upload() {
             px-5 py-3
             rounded-2xl
             border
+
             ${
               message.includes("success")
                 ? "bg-green-500/10 border-green-500/20 text-green-400"

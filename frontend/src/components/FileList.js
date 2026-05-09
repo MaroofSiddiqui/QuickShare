@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api";
 import toast from "react-hot-toast";
 import { QRCodeCanvas } from "qrcode.react";
 
@@ -12,6 +12,7 @@ function FileList() {
   const [filterType, setFilterType] = useState("all");
   const [folderFilter, setFolderFilter] = useState("All");
   const [showQR, setShowQR] = useState(null);
+
   const token = localStorage.getItem("token");
   const isGuest = !token;
 
@@ -23,8 +24,8 @@ function FileList() {
 
     try {
 
-      const res = await axios.get(
-        `http://localhost:5000/api/files?guestId=${localStorage.getItem("guestId")}`,
+      const res = await API.get(
+        `/files?guestId=${localStorage.getItem("guestId")}`,
         {
           headers: {
             ...(localStorage.getItem("token") && {
@@ -48,8 +49,8 @@ function FileList() {
 
     try {
 
-      await axios.delete(
-        `http://localhost:5000/api/files/${id}`,
+      await API.delete(
+        `/files/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -462,7 +463,7 @@ function FileList() {
           {filteredFiles.map((file) => {
 
             const shareLink =
-              `http://localhost:5000/api/files/download/${file._id}`;
+              `${API.defaults.baseURL}/files/download/${file._id}`;
 
             return (
 
@@ -484,11 +485,11 @@ function FileList() {
                 <div className="flex items-center gap-4 min-w-0">
 
                   <img
-                    src={`http://localhost:5000/${file.path}`}
+                    src={`${API.defaults.baseURL.replace("/api", "")}/${file.path}`}
                     alt=""
                     onClick={() =>
                       setPreviewImage(
-                        `http://localhost:5000/${file.path}`
+                        `${API.defaults.baseURL.replace("/api", "")}/${file.path}`
                       )
                     }
                     className="
@@ -506,10 +507,6 @@ function FileList() {
                       <p className="text-base font-semibold truncate max-w-[180px]">
                         {file.displayName || file.originalname}
                       </p>
-
-                      <button title="Edit" className="text-yellow-400">
-                        ✏️
-                      </button>
 
                     </div>
 
@@ -539,7 +536,8 @@ function FileList() {
 
                 <div className="flex items-center justify-center gap-2">
 
-                  <a title="Download"
+                  <a
+                    title="Download"
                     href={shareLink}
                     target="_blank"
                     rel="noreferrer"
@@ -555,7 +553,8 @@ function FileList() {
                     ⬇️
                   </a>
 
-                  <button title="Share Link"
+                  <button
+                    title="Share Link"
                     onClick={() => {
 
                       navigator.clipboard.writeText(
@@ -576,7 +575,8 @@ function FileList() {
                     🔗
                   </button>
 
-                  <button title="QR Code"
+                  <button
+                    title="QR Code"
                     onClick={() => setShowQR(shareLink)}
                     className="
                       w-10 h-10
@@ -590,7 +590,8 @@ function FileList() {
                   </button>
 
                   {!isGuest && (
-                    <button title="Send Email"
+                    <button
+                      title="Send Email"
                       onClick={async () => {
 
                         const email =
@@ -600,8 +601,8 @@ function FileList() {
 
                         try {
 
-                          await axios.post(
-                            `http://localhost:5000/api/files/share-email/${file._id}`,
+                          await API.post(
+                            `/files/share-email/${file._id}`,
                             { email },
                             {
                               headers: {
@@ -633,7 +634,8 @@ function FileList() {
                   )}
 
                   {!isGuest && (
-                    <button title="Delete"
+                    <button
+                      title="Delete"
                       onClick={() => {
 
                         const confirmDelete =
@@ -670,90 +672,86 @@ function FileList() {
 
       </div>
 
-      {
-        previewImage && (
+      {previewImage && (
+
+        <div
+          onClick={() => setPreviewImage(null)}
+          className="
+            fixed inset-0 z-[100]
+            bg-black/80
+            backdrop-blur-md
+            flex items-center justify-center
+            p-10
+          "
+        >
+
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="
+              max-w-full
+              max-h-full
+              rounded-2xl
+            "
+          />
+
+        </div>
+
+      )}
+
+      {showQR && (
+
+        <div
+          className="
+            fixed inset-0 z-[200]
+            bg-black/80
+            backdrop-blur-md
+            flex items-center justify-center
+          "
+        >
 
           <div
-            onClick={() => setPreviewImage(null)}
             className="
-              fixed inset-0 z-[100]
-              bg-black/80
-              backdrop-blur-md
-              flex items-center justify-center
-              p-10
+              bg-[#0f172a]
+              border border-purple-500/20
+              rounded-3xl
+              p-8
+              flex flex-col items-center
+              gap-5
             "
           >
 
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="
-                max-w-full
-                max-h-full
-                rounded-2xl
-              "
-            />
+            <h2 className="text-2xl font-bold">
+              Share QR Code
+            </h2>
 
-          </div>
+            <div className="bg-white p-4 rounded-2xl">
 
-        )
-      }
-
-      {
-        showQR && (
-
-          <div
-            className="
-              fixed inset-0 z-[200]
-              bg-black/80
-              backdrop-blur-md
-              flex items-center justify-center
-            "
-          >
-
-            <div
-              className="
-                bg-[#0f172a]
-                border border-purple-500/20
-                rounded-3xl
-                p-8
-                flex flex-col items-center
-                gap-5
-              "
-            >
-
-              <h2 className="text-2xl font-bold">
-                Share QR Code
-              </h2>
-
-              <div className="bg-white p-4 rounded-2xl">
-
-                <QRCodeCanvas
-                  value={showQR}
-                  size={220}
-                />
-
-              </div>
-
-              <button
-                onClick={() => setShowQR(null)}
-                className="
-                  px-5 py-2
-                  rounded-xl
-                  bg-red-500/20
-                  border border-red-500/30
-                  text-red-400
-                "
-              >
-                Close
-              </button>
+              <QRCodeCanvas
+                value={showQR}
+                size={220}
+              />
 
             </div>
 
+            <button
+              onClick={() => setShowQR(null)}
+              className="
+                px-5 py-2
+                rounded-xl
+                bg-red-500/20
+                border border-red-500/30
+                text-red-400
+              "
+            >
+              Close
+            </button>
+
           </div>
 
-        )
-      }
+        </div>
+
+      )}
 
     </div>
 
